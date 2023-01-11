@@ -1,5 +1,7 @@
 import datetime
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, resolve_url, reverse
@@ -11,8 +13,8 @@ from django.views.generic import TemplateView, CreateView, ListView, DetailView,
 from action.models import Treatment
 from apptevent.models import Appointment
 from manager.forms import RegistrationForm, EmployeeForm, CustomerForm, CustomerSourceForm, \
-    CustomerFilterForm, DepartmentForm, ServiceForm, UserUpdateForm, LoginForm
-from manager.models import Employee, Department, Customer, CustomerSource, Service
+    CustomerFilterForm, DepartmentForm, ServiceForm, UserUpdateForm, LoginForm, SetPasswordForm
+from manager.models import Employee, Department, Customer, CustomerSource, Service, LoginLogs
 
 
 # Create your views here.
@@ -28,6 +30,11 @@ class Register(CreateView):
     template_name = 'manager/registrations/register.html'
     success_url = reverse_lazy('manager:login')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['logs'] = LoginLogs.objects.all()
+        return context
+
 
 class LoginViewer(LoginView):
     model = get_user_model()
@@ -35,6 +42,10 @@ class LoginViewer(LoginView):
     template_name = 'manager/registrations/login.html'
 
     def get_success_url(self):
+        if self.request.user.is_authenticated:
+            cur_user = self.request.user
+            LoginLogs.objects.create(user=cur_user)
+
         url = resolve_url('manager:dashboard')
         return url
 
@@ -54,6 +65,23 @@ class UserUpdate(UpdateView):
     def get_success_url(self):
         url = resolve_url('manager:dashboard')
         return url
+
+
+@login_required
+def password_change(request):
+    user = request.user
+    if request.method == 'POST':
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your password has been changed")
+            return redirect('manager:login')
+        else:
+            for error in list(form.errors.values()):
+                messages.error(request, error)
+
+    form = SetPasswordForm(user)
+    return render(request, 'manager/registrations/user_pass_change.html', {'form': form})
 
 
 # Main Board

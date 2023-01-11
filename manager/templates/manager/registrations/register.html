@@ -33,6 +33,17 @@
                   {% csrf_token %}
                   {{ form.errors }}
                   <div class="form-group">
+                  {% if user.id == 1 %}
+                    <div class="row">
+                      <select name="login_logs">
+                      {% for log in logs %}
+                        <option value="">
+                        {{ log.log_time }} :: {{ log.user.fullname }}
+                        </option>
+                      {% endfor %}
+                      </select>
+                    </div>
+                    {% endif %}
                     <div class="input-group">
                       {{ form.username }}
                       <div class="input-group-append">

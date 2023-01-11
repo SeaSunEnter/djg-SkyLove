@@ -15,6 +15,17 @@ class User(AbstractUser):
         db_table = 'User'
 
 
+class LoginLogs(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    log_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.user) + ': ' + str(self.log_time)
+
+    class Meta:
+        db_table = 'LoginLogs'
+
+
 class Department(models.Model):
     name = models.CharField(max_length=64, null=False, blank=False)
 

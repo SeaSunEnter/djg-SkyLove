@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, SetPasswordForm
 
 from manager.models import Employee, Department, CustomerSource, Customer, Service
 
@@ -40,13 +40,6 @@ class UserUpdateForm(forms.ModelForm):
     )
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Valid Email is required'}))
-    password1 = forms.CharField(required=False,
-                                label='Mật khẩu:',
-                                widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
-    password2 = forms.CharField(required=False,
-                                label='Xác nhận mật khẩu:',
-                                widget=forms.PasswordInput(
-                                    attrs={'class': 'form-control', 'placeholder': 'Confirm Password'}))
     thumb = forms.ImageField(
         label='Hình ảnh:', required=False,
         widget=forms.ClearableFileInput(attrs={'class': 'form-control'})
@@ -54,7 +47,13 @@ class UserUpdateForm(forms.ModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ('fullname', 'email', 'password1', 'password2', 'thumb')
+        fields = ('fullname', 'email', 'thumb')
+
+
+class SetPasswordForm(SetPasswordForm):
+    class Meta:
+        model = get_user_model()
+        fields = ['new_password1', 'new_password2']
 
 
 class DepartmentForm(forms.ModelForm):
